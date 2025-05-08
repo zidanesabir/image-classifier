@@ -181,6 +181,13 @@ The application is deployed on Minikube with:
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+## projet UI 
+![Capture d’écran 2025-05-08 235222](https://github.com/user-attachments/assets/3043428a-f809-4b4b-bf85-cf324b569a2d)
+![image](https://github.com/user-attachments/assets/44e38f97-0ddd-4e88-9188-cc6cc217ebe8)
+![image](https://github.com/user-attachments/assets/c7d8449a-bf48-43d8-9ac7-d21c25c2a726)
+![image](https://github.com/user-attachments/assets/28f2a029-736b-4d50-881a-e0eb55821fbf)
+
+
 
 ## Author
 
