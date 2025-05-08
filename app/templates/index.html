@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Classifier</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+    <meta name="description" content="AI Image Classifier powered by MobileNet & Kubernetes - Classify images using machine learning">
+</head>
+<body>
+    <!-- Theme Toggle Button -->
+    <div class="theme-toggle" id="theme-toggle">
+        <i class="fas fa-moon"></i>
+    </div>
+
+    <div class="background-animation">
+        <div class="cube"></div>
+        <div class="cube"></div>
+        <div class="cube"></div>
+        <div class="cube"></div>
+        <div class="cube"></div>
+    </div>
+    
+    <div class="page-wrapper">
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-robot pulse"></i>
+                <h1>AI <span>Image Classifier</span></h1>
+            </div>
+            <p class="tagline">Powered by MobileNet & Kubernetes</p>
+        </header>
+        
+        <main class="main-content">
+            <section class="features-container">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3>MobileNet Model</h3>
+                    <p>Lightweight and powerful pre-trained CNN optimized for image classification.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <h3>Kubernetes Deployment</h3>
+                    <p>Scalable infrastructure running on Minikube for reliable service delivery.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>Fast Inference</h3>
+                    <p>Optimized for quick predictions with minimal latency and resource usage.</p>
+                </div>
+            </section>
+            
+            <div class="app-container">
+                <!-- Info Card -->
+                <div class="card info-card" id="info-card">
+                    <div class="card-header">
+                        <i class="fas fa-info-circle"></i>
+                        <h2>How It Works</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-content">
+                            <p><i class="fas fa-check-circle"></i> Supports JPG, PNG, GIF, and WebP images</p>
+                            <p><i class="fas fa-check-circle"></i> Maximum file size: 5MB</p>
+                            <p><i class="fas fa-check-circle"></i> Best results with clear, centered objects</p>
+                            <p><i class="fas fa-check-circle"></i> Can recognize 1000+ object categories</p>
+                        </div>
+                        <div class="info-toggle">
+                            <button class="btn-toggle" id="toggle-info">
+                                <span>Show Less</span>
+                                <i class="fas fa-chevron-up"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h2>Upload Image</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="drop-zone" id="drop-zone">
+                            <div class="drop-zone-prompt">
+                                <i class="fas fa-file-image"></i>
+                                <p>Drag & drop an image or click to upload</p>
+                            </div>
+                            <input type="file" class="drop-zone-input" id="file-input" accept="image/*">
+                        </div>
+                        
+                        <div class="file-info" id="file-info">
+                            <span id="file-name">No file selected</span>
+                            <span id="file-size">0 KB</span>
+                        </div>
+                        
+                        <div id="preview-container" style="display: none; text-align: center; margin-bottom: 20px;">
+                            <img id="preview-image" class="preview-image" src="#" alt="Preview">
+                            
+                            <!-- Image Edit Controls -->
+                            <div class="image-controls">
+                                <button class="btn-control" id="rotate-left" title="Rotate Left">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                                <button class="btn-control" id="rotate-right" title="Rotate Right">
+                                    <i class="fas fa-redo"></i>
+                                </button>
+                                <button class="btn-control" id="flip-horizontal" title="Flip Horizontal">
+                                    <i class="fas fa-arrows-alt-h"></i>
+                                </button>
+                                <button class="btn-control" id="flip-vertical" title="Flip Vertical">
+                                    <i class="fas fa-arrows-alt-v"></i>
+                                </button>
+                                <button class="btn-control" id="reset-image" title="Reset Image">
+                                    <i class="fas fa-sync"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <button class="btn-classify" id="classify-btn">
+                            <span class="btn-text">Classify Image</span>
+                            <i class="fas fa-search btn-icon"></i>
+                            <div class="btn-progress" id="btn-progress"></div>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card result-card" id="result-card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-bar"></i>
+                        <h2>Classification Results</h2>
+                    </div>
+                    <div class="card-body" id="result-container">
+                        <div class="result-image">
+                            <img id="result-img" src="#" alt="Classified Image">
+                        </div>
+                        
+                        <div class="result-details">
+                            <div class="result-item">
+                                <span class="label">Filename:</span>
+                                <span class="value filename" id="result-filename">-</span>
+                            </div>
+                            
+                            <div class="result-item">
+                                <span class="label">Processing Time:</span>
+                                <span class="value" id="result-time">-</span>
+                            </div>
+                            
+                            <div id="predictions-container">
+                                <!-- Predictions will be added here by JavaScript -->
+                            </div>
+                            
+                            <!-- Share Results -->
+                            <div class="share-container">
+                                <h3>Share Results</h3>
+                                <div class="share-buttons">
+                                    <button class="btn-share" id="share-twitter">
+                                        <i class="fab fa-twitter"></i>
+                                        <span>Twitter</span>
+                                    </button>
+                                    <button class="btn-share" id="share-facebook">
+                                        <i class="fab fa-facebook"></i>
+                                        <span>Facebook</span>
+                                    </button>
+                                    <button class="btn-share" id="share-linkedin">
+                                        <i class="fab fa-linkedin"></i>
+                                        <span>LinkedIn</span>
+                                    </button>
+                                    <button class="btn-share" id="share-copy">
+                                        <i class="fas fa-copy"></i>
+                                        <span>Copy Link</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card result-card error-card" id="error-card" style="display: none;">
+                    <div class="card-header">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h2>Error</h2>
+                    </div>
+                    <div class="card-body">
+                        <p class="error-message" id="error-message">Something went wrong.</p>
+                    </div>
+                </div>
+                
+                <!-- History Card -->
+                <div class="card history-card" id="history-card" style="display: none;">
+                    <div class="card-header">
+                        <i class="fas fa-history"></i>
+                        <h2>Classification History</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="history-container" id="history-container">
+                            <!-- History items will be added here by JavaScript -->
+                            <div class="empty-history">
+                                <i class="fas fa-images"></i>
+                                <p>Your classification history will appear here</p>
+                            </div>
+                        </div>
+                        <button class="btn-clear-history" id="clear-history">
+                            <i class="fas fa-trash"></i>
+                            <span>Clear History</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="footer">
+            <div class="footer-content">
+                <p>&copy; 2025 AI Image Classifier - Internship Project</p>
+                <p class="creator-credit">
+                    <i class="fas fa-code"></i> Created by Zidane Sabir
+                </p>
+                <div class="tech-stack">
+                    <div class="tech-item">
+                        <i class="fab fa-python"></i>
+                        <span>Python</span>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fas fa-server"></i>
+                        <span>FastAPI</span>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fab fa-docker"></i>
+                        <span>Docker</span>
+                    </div>
+                    <div class="tech-item">
+                        <i class="fas fa-dharmachakra"></i>
+                        <span>Kubernetes</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Processing Image...</p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', path='/js/script.js') }}"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Elements
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const fileName = document.getElementById('file-name');
+    const fileSize = document.getElementById('file-size');
+    const fileInfo = document.getElementById('file-info');
+    const previewContainer = document.getElementById('preview-container');
+    const previewImage = document.getElementById('preview-image');
+    const classifyBtn = document.getElementById('classify-btn');
+    const btnProgress = document.getElementById('btn-progress');
+    const resultCard = document.getElementById('result-card');
+    const errorCard = document.getElementById('error-card');
+    const errorMessage = document.getElementById('error-message');
+    const resultImg = document.getElementById('result-img');
+    const resultFilename = document.getElementById('result-filename');
+    const resultTime = document.getElementById('result-time');
+    const predictionsContainer = document.getElementById('predictions-container');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const themeToggle = document.getElementById('theme-toggle');
+    const toggleInfoBtn = document.getElementById('toggle-info');
+    const infoCard = document.getElementById('info-card');
+    const historyCard = document.getElementById('history-card');
+    const historyContainer = document.getElementById('history-container');
+    const clearHistoryBtn = document.getElementById('clear-history');
+    
+    // Image editing buttons
+    const rotateLeftBtn = document.getElementById('rotate-left');
+    const rotateRightBtn = document.getElementById('rotate-right');
+    const flipHorizontalBtn = document.getElementById('flip-horizontal');
+    const flipVerticalBtn = document.getElementById('flip-vertical');
+    const resetImageBtn = document.getElementById('reset-image');
+    
+    // Share buttons
+    const shareTwitterBtn = document.getElementById('share-twitter');
+    const shareFacebookBtn = document.getElementById('share-facebook');
+    const shareLinkedInBtn = document.getElementById('share-linkedin');
+    const shareCopyBtn = document.getElementById('share-copy');
+    
+    // Current image transformation state
+    let imageTransform = {
+        rotation: 0,
+        flipX: false,
+        flipY: false
+    };
+    
+    // Hide result card initially
+    resultCard.style.display = 'none';
+    
+    // Initialize history from localStorage
+    let classificationHistory = JSON.parse(localStorage.getItem('classificationHistory')) || [];
+    updateHistoryDisplay();
+    
+    // Theme Toggle
+    themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const isDarkMode = document.body.classList.contains('dark-mode');
+        themeToggle.querySelector('i').className = isDarkMode ? 'fas fa-sun' : 'fas fa-moon';
+        localStorage.setItem('darkMode', isDarkMode);
+    });
+    
+    // Apply saved theme preference
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark-mode');
+        themeToggle.querySelector('i').className = 'fas fa-sun';
+    }
+    
+    // Toggle info card
+    toggleInfoBtn.addEventListener('click', () => {
+        const infoContent = infoCard.querySelector('.info-content');
+        const isExpanded = infoContent.style.display !== 'none';
+        
+        if (isExpanded) {
+            infoContent.style.display = 'none';
+            toggleInfoBtn.querySelector('span').textContent = 'Show More';
+            toggleInfoBtn.querySelector('i').className = 'fas fa-chevron-down';
+        } else {
+            infoContent.style.display = 'block';
+            toggleInfoBtn.querySelector('span').textContent = 'Show Less';
+            toggleInfoBtn.querySelector('i').className = 'fas fa-chevron-up';
+        }
+    });
+    
+    // ====================== FIXED DRAG AND DROP ======================
+    // Highlight drop zone when dragging over
+    ['dragover', 'dragenter'].forEach(eventName => {
+        dropZone.addEventListener(eventName, function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.add('drop-zone-active');
+        });
+    });
+    
+    // Remove highlight when leaving
+    ['dragleave', 'dragend'].forEach(eventName => {
+        dropZone.addEventListener(eventName, function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('drop-zone-active');
+        });
+    });
+    
+    // Handle dropped files - process directly without assigning to file input
+    dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('drop-zone-active');
+        
+        if (e.dataTransfer.files && e.dataTransfer.files.length) {
+            updateFileInfo(e.dataTransfer.files[0]);
+            resetImageTransformations();
+        }
+    });
+    
+    // Handle click to open file dialog
+    dropZone.addEventListener('click', function(e) {
+    // Only trigger file input if the click wasn't on the file input itself
+    if (e.target !== fileInput) {
+        fileInput.click();
+    }
+});
+
+// Add this to prevent the file input click from bubbling up
+fileInput.addEventListener('click', function(e) {
+    e.stopPropagation();
+})
+    
+    // Handle file selection via file dialog
+    fileInput.addEventListener('change', function() {
+        if (fileInput.files && fileInput.files.length) {
+            updateFileInfo(fileInput.files[0]);
+            resetImageTransformations();
+        }
+    });
+    
+    // Update file info and preview
+    function updateFileInfo(file) {
+        // Validate file type
+        if (!file.type.match('image.*')) {
+            alert('Please select an image file (JPG, PNG, GIF, or WebP)');
+            return;
+        }
+        
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File size exceeds 5MB limit');
+            return;
+        }
+        
+        // Update file info display
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+        fileInfo.classList.add('has-file');
+        
+        // Create preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImage.src = e.target.result;
+            previewContainer.style.display = 'block';
+            resultImg.src = e.target.result; // Also set result image
+        };
+        reader.onerror = function() {
+            alert('Error reading file');
+        };
+        reader.readAsDataURL(file);
+        
+        // Reset results display
+        resultCard.style.display = 'none';
+        errorCard.style.display = 'none';
+    }
+    
+    // Format file size
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    // ====================== IMAGE TRANSFORMATIONS ======================
+    function applyImageTransformations() {
+        let transform = '';
+        transform += `rotate(${imageTransform.rotation}deg) `;
+        if (imageTransform.flipX) transform += 'scaleX(-1) ';
+        if (imageTransform.flipY) transform += 'scaleY(-1) ';
+        previewImage.style.transform = transform;
+    }
+    
+    function resetImageTransformations() {
+        imageTransform = { rotation: 0, flipX: false, flipY: false };
+        applyImageTransformations();
+    }
+    
+    // Rotation buttons
+    rotateLeftBtn.addEventListener('click', () => {
+        imageTransform.rotation = (imageTransform.rotation - 90) % 360;
+        applyImageTransformations();
+    });
+    
+    rotateRightBtn.addEventListener('click', () => {
+        imageTransform.rotation = (imageTransform.rotation + 90) % 360;
+        applyImageTransformations();
+    });
+    
+    // Flip buttons
+    flipHorizontalBtn.addEventListener('click', () => {
+        imageTransform.flipX = !imageTransform.flipX;
+        applyImageTransformations();
+    });
+    
+    flipVerticalBtn.addEventListener('click', () => {
+        imageTransform.flipY = !imageTransform.flipY;
+        applyImageTransformations();
+    });
+    
+    // Reset button
+    resetImageBtn.addEventListener('click', resetImageTransformations);
+    
+    // ====================== CLASSIFICATION ======================
+    classifyBtn.addEventListener('click', async () => {
+        if (!fileInput.files.length && !previewImage.src.startsWith('data:')) {
+            alert('Please select an image first');
+            return;
+        }
+        
+        // Show loading state
+        classifyBtn.classList.add('loading');
+        startProgressAnimation();
+        loadingOverlay.style.display = 'flex';
+        resultCard.style.display = 'none';
+        errorCard.style.display = 'none';
+        
+        try {
+            const formData = new FormData();
+            
+            // Check if we have a file from input or need to use the preview image
+            if (fileInput.files.length) {
+                // Use transformed image if needed
+                if (imageTransform.rotation !== 0 || imageTransform.flipX || imageTransform.flipY) {
+                    const transformedImageBlob = await getTransformedImageBlob();
+                    formData.append('file', transformedImageBlob, fileInput.files[0].name);
+                } else {
+                    formData.append('file', fileInput.files[0]);
+                }
+            } else {
+                // Handle case when image was dragged (no file input)
+                const blob = await fetch(previewImage.src).then(r => r.blob());
+                formData.append('file', blob, 'uploaded_image.jpg');
+            }
+            
+            // Send to API
+            const response = await fetch('/api/classify', {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            displayResults(data);
+            addToHistory(data);
+            
+        } catch (error) {
+            console.error('Error:', error);
+            errorMessage.textContent = `Classification failed: ${error.message}`;
+            errorCard.style.display = 'block';
+        } finally {
+            classifyBtn.classList.remove('loading');
+            stopProgressAnimation();
+            loadingOverlay.style.display = 'none';
+        }
+    });
+    
+    // Get transformed image as blob
+    async function getTransformedImageBlob() {
+        return new Promise((resolve) => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            img.onload = function() {
+                // Adjust canvas size for rotation
+                if (imageTransform.rotation % 180 === 90) {
+                    canvas.width = img.height;
+                    canvas.height = img.width;
+                } else {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                }
+                
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.rotate(imageTransform.rotation * Math.PI / 180);
+                ctx.scale(
+                    imageTransform.flipX ? -1 : 1, 
+                    imageTransform.flipY ? -1 : 1
+                );
+                ctx.drawImage(img, -img.width / 2, -img.height / 2, img.width, img.height);
+                
+                canvas.toBlob(resolve, 'image/jpeg', 0.95);
+            };
+            
+            img.src = previewImage.src;
+        });
+    }
+    
+    // Progress animation
+    function startProgressAnimation() {
+        btnProgress.style.width = '0%';
+        setTimeout(() => { btnProgress.style.width = '100%' }, 100);
+    }
+    
+    function stopProgressAnimation() {
+        btnProgress.style.width = '0%';
+    }
+    
+    // ====================== RESULTS DISPLAY ======================
+    function displayResults(data) {
+        resultImg.src = previewImage.src;
+        resultFilename.textContent = data.filename;
+        resultTime.textContent = `${data.processing_time} seconds`;
+        
+        // Clear previous predictions
+        predictionsContainer.innerHTML = '';
+        
+        // Add new predictions
+        data.predictions.forEach((pred, index) => {
+            const item = document.createElement('div');
+            item.className = 'result-item';
+            item.style.animationDelay = `${index * 0.1}s`;
+            
+            const label = document.createElement('span');
+            label.className = 'label';
+            label.textContent = `${index + 1}. ${formatClassName(pred.class_name)}`;
+            
+            const confidence = document.createElement('div');
+            confidence.className = 'confidence';
+            
+            const barContainer = document.createElement('div');
+            barContainer.className = 'confidence-bar-container';
+            
+            const bar = document.createElement('div');
+            bar.className = 'confidence-bar';
+            bar.style.width = '0%';
+            
+            const value = document.createElement('span');
+            value.className = 'confidence-value';
+            value.textContent = `${(pred.probability * 100).toFixed(2)}%`;
+            
+            barContainer.appendChild(bar);
+            confidence.appendChild(barContainer);
+            confidence.appendChild(value);
+            item.appendChild(label);
+            item.appendChild(confidence);
+            predictionsContainer.appendChild(item);
+            
+            // Animate bar
+            setTimeout(() => {
+                bar.style.width = `${pred.probability * 100}%`;
+            }, 100 + index * 100);
+        });
+        
+        // Show results
+        resultCard.style.display = 'block';
+        setTimeout(() => {
+            resultCard.classList.add('animate-in');
+        }, 10);
+        
+        // Show history if needed
+        if (classificationHistory.length > 0) {
+            historyCard.style.display = 'block';
+        }
+        
+        // Scroll to results
+        resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    // Format class name (snake_case to Title Case)
+    function formatClassName(className) {
+        return className.split('_')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    }
+    
+    // ====================== HISTORY MANAGEMENT ======================
+    function addToHistory(data) {
+        const historyItem = {
+            id: Date.now(),
+            timestamp: new Date().toISOString(),
+            filename: data.filename,
+            imageData: previewImage.src,
+            topPrediction: data.predictions[0],
+            processingTime: data.processing_time
+        };
+        
+        classificationHistory.unshift(historyItem);
+        if (classificationHistory.length > 10) {
+            classificationHistory.pop();
+        }
+        
+        localStorage.setItem('classificationHistory', JSON.stringify(classificationHistory));
+        updateHistoryDisplay();
+    }
+    
+    function updateHistoryDisplay() {
+        historyContainer.innerHTML = '';
+        
+        if (classificationHistory.length === 0) {
+            historyCard.style.display = 'none';
+            return;
+        }
+        
+        historyCard.style.display = 'block';
+        
+        classificationHistory.forEach(item => {
+            const historyItemEl = document.createElement('div');
+            historyItemEl.className = 'history-item';
+            
+            // Image
+            const historyImage = document.createElement('div');
+            historyImage.className = 'history-image';
+            const img = document.createElement('img');
+            img.src = item.imageData;
+            img.alt = item.filename;
+            historyImage.appendChild(img);
+            
+            // Details
+            const historyDetails = document.createElement('div');
+            historyDetails.className = 'history-details';
+            
+            const historyName = document.createElement('div');
+            historyName.className = 'history-name';
+            historyName.textContent = item.filename;
+            
+            const historyPredict = document.createElement('div');
+            historyPredict.className = 'history-predict';
+            historyPredict.textContent = `${formatClassName(item.topPrediction.class_name)} (${(item.topPrediction.probability * 100).toFixed(2)}%)`;
+            
+            const historyTime = document.createElement('div');
+            historyTime.className = 'history-time';
+            historyTime.textContent = new Date(item.timestamp).toLocaleString();
+            
+            historyDetails.append(historyName, historyPredict, historyTime);
+            
+            // Actions
+            const historyActions = document.createElement('div');
+            historyActions.className = 'history-actions';
+            
+            const viewBtn = document.createElement('button');
+            viewBtn.className = 'btn-history-action';
+            viewBtn.innerHTML = '<i class="fas fa-eye"></i>';
+            viewBtn.title = 'View Result';
+            viewBtn.addEventListener('click', () => loadHistoryItem(item));
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn-history-action';
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteBtn.title = 'Delete from History';
+            deleteBtn.addEventListener('click', () => removeHistoryItem(item.id));
+            
+            historyActions.append(viewBtn, deleteBtn);
+            historyItemEl.append(historyImage, historyDetails, historyActions);
+            historyContainer.appendChild(historyItemEl);
+        });
+    }
+    
+    function loadHistoryItem(item) {
+        previewImage.src = item.imageData;
+        previewContainer.style.display = 'block';
+        resetImageTransformations();
+        
+        fileName.textContent = item.filename;
+        fileSize.textContent = 'From History';
+        fileInfo.classList.add('has-file');
+        
+        // Create dummy file for the input
+        fetch(item.imageData)
+            .then(res => res.blob())
+            .then(blob => {
+                const file = new File([blob], item.filename, { type: 'image/jpeg' });
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+            });
+        
+        previewContainer.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    function removeHistoryItem(id) {
+        classificationHistory = classificationHistory.filter(item => item.id !== id);
+        localStorage.setItem('classificationHistory', JSON.stringify(classificationHistory));
+        updateHistoryDisplay();
+    }
+    
+    clearHistoryBtn.addEventListener('click', () => {
+        if (confirm('Are you sure you want to clear your classification history?')) {
+            classificationHistory = [];
+            localStorage.removeItem('classificationHistory');
+            updateHistoryDisplay();
+        }
+    });
+    
+    // ====================== SHARE FUNCTIONALITY ======================
+    shareTwitterBtn.addEventListener('click', () => {
+        if (classificationHistory.length === 0) return;
+        const text = `I just used AI Image Classifier to identify this image as "${formatClassName(classificationHistory[0].topPrediction.class_name)}" with ${(classificationHistory[0].topPrediction.probability * 100).toFixed(2)}% confidence!`;
+        const url = window.location.href;
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+    });
+    
+    shareFacebookBtn.addEventListener('click', () => {
+        if (classificationHistory.length === 0) return;
+        const url = window.location.href;
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+    });
+    
+    shareLinkedInBtn.addEventListener('click', () => {
+        if (classificationHistory.length === 0) return;
+        const text = `I just used AI Image Classifier to identify this image as "${formatClassName(classificationHistory[0].topPrediction.class_name)}" with ${(classificationHistory[0].topPrediction.probability * 100).toFixed(2)}% confidence!`;
+        const url = window.location.href;
+        window.open(`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url)}&title=AI Image Classification&summary=${encodeURIComponent(text)}`, '_blank');
+    });
+    
+    shareCopyBtn.addEventListener('click', () => {
+        if (classificationHistory.length === 0) return;
+        const text = `I just used AI Image Classifier to identify this image as "${formatClassName(classificationHistory[0].topPrediction.class_name)}" with ${(classificationHistory[0].topPrediction.probability * 100).toFixed(2)}% confidence! Check it out at: ${window.location.href}`;
+        
+        const tempInput = document.createElement("textarea");
+        tempInput.style.position = "absolute";
+        tempInput.style.left = "-1000px";
+        tempInput.style.top = "-1000px";
+        tempInput.value = text;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand("copy");
+        document.body.removeChild(tempInput);
+        
+        const originalText = shareCopyBtn.innerHTML;
+        shareCopyBtn.innerHTML = '<i class="fas fa-check"></i><span>Copied!</span>';
+        setTimeout(() => {
+            shareCopyBtn.innerHTML = originalText;
+        }, 2000);
+    });
+    
+    // ====================== KEYBOARD SHORTCUTS ======================
+    document.addEventListener('keydown', (e) => {
+        // Ctrl/Cmd + Shift + C to classify
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'C') {
+            e.preventDefault();
+            classifyBtn.click();
+        }
+        
+        // Ctrl/Cmd + Shift + U to upload
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'U') {
+            e.preventDefault();
+            fileInput.click();
+        }
+    });
+    
+    // ====================== SERVICE WORKER ======================
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(registration => {
+                    console.log('ServiceWorker registration successful');
+                })
+                .catch(error => {
+                    console.log('ServiceWorker registration failed: ', error);
+                });
+        });
+    }
+});
+    </script>
+</body>
+</html>
